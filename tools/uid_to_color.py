@@ -5,22 +5,23 @@ Summary: performs basic arithmatic on a given number with a length of 15 or high
 """
 
 
-def conv_num(num, r_one, r_two, round_by=391):
+def conv_num(num, r_one, r_two, round_val):
     """
     :param num:
     :param r_one:
     :param r_two:
-    :param round_by
+    :param round_val:
     :return:
     """
     num = int(num[r_one:r_two])
-    num = round(num / round_by)
+    num = round(num / round_val)
     return num
 
 
 def id_to_color(provided_id: str = "0", l_min_range: int = -5, l_max_range: int = None,
                 m_min_range: int = -11, m_max_range: int = -6,
-                r_min_range: int = -16, r_max_range: int = -11):
+                r_min_range: int = -16, r_max_range: int = -11,
+                round_val=391):
     """
 
     :param provided_id:
@@ -30,16 +31,19 @@ def id_to_color(provided_id: str = "0", l_min_range: int = -5, l_max_range: int 
     :param m_max_range:
     :param r_min_range:
     :param r_max_range:
+    :param round_val:
     :return:
     """
     if len(str(provided_id)) < 15:
         return False, f"ID insufficiently long, length of {len(id)}.", 0
+    elif round_val == 0:
+        return False, "Divisor cannot be 0", 0
     else:
         print(f"User ID\n-------\n{user_id[l_min_range:l_max_range]}\n{user_id[m_min_range:m_max_range]}\n"
               f"{user_id[r_min_range:r_max_range]}\n")
-        first_num = conv_num(provided_id, l_min_range, l_max_range)
-        second_num = conv_num(provided_id, m_min_range, m_max_range)
-        third_num = conv_num(provided_id, r_min_range, r_max_range)
+        first_num = conv_num(provided_id, l_min_range, l_max_range, round_val)
+        second_num = conv_num(provided_id, m_min_range, m_max_range, round_val)
+        third_num = conv_num(provided_id, r_min_range, r_max_range, round_val)
         print(f"Alt Nums\n-------\n{first_num}\n{second_num}\n{third_num}\n")
         return True, "Success", (first_num, second_num, third_num)
 
