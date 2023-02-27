@@ -17,7 +17,7 @@ def env_var(var_list: list = None) -> dict:
     :return dict: dictionary composed of environment variables and their values
     """
 
-    print(f"Starting: {inspect.currentframe().f_code.co_name} from {__name__}")
+    print(f"\nStarting: {inspect.currentframe().f_code.co_name} from {__name__}")
     print(f"var_list: {var_list}")
 
     for variable_item in var_list:
@@ -29,7 +29,7 @@ def env_var(var_list: list = None) -> dict:
             os.environ.setdefault(variable_item, input(f"Please enter value for {variable_item}: "))
             # using os.environ.setdefault in lieu of os.environ[var] = var due to compatibility issue on macOS
 
-    print(f"Finished: {inspect.currentframe().f_code.co_name} inside {__name__}")
+    print(f"Finished: {inspect.currentframe().f_code.co_name} inside {__name__}\n")
     return {variable_item: os.environ[variable_item] for variable_item in var_list}  # Returns a dictionary
     # constructed out of environmental variable names as keys, and their values as... values.
 

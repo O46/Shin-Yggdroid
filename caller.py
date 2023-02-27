@@ -1,0 +1,3 @@
+from tests import test_evironmental_setter
+
+print(test_evironmental_setter)
