@@ -23,7 +23,7 @@ def id_to_color(provided_id: str = "0", l_min_range: int = -5, l_max_range: int 
                 r_min_range: int = -16, r_max_range: int = -11,
                 round_val=391):
     """
-
+    Converts a given ID with a length of 15 or more in to an RGB color value.
     :param provided_id:
     :param l_min_range:
     :param l_max_range:
@@ -32,7 +32,7 @@ def id_to_color(provided_id: str = "0", l_min_range: int = -5, l_max_range: int 
     :param r_min_range:
     :param r_max_range:
     :param round_val:
-    :return:
+    :return: bool, string, tuple or None
     """
     if len(str(provided_id)) < 15:
         return False, f"ID insufficiently long, length of {len(id)}.", 0
@@ -49,11 +49,12 @@ def id_to_color(provided_id: str = "0", l_min_range: int = -5, l_max_range: int 
 
 
 if __name__ == "__main__":
-    user_id = input("Enter User ID: ")
-    print(id_to_color(user_id))
+    user_id = input("Enter User ID: ")  # 87685931527606272
+    color_output = id_to_color(user_id)
     """while True:
         try:
             user_id = int(input("Enter User ID: "))
             print(id_to_color(user_id))
         except ValueError as val_err:
-            print(f"Error: {val_err}.\nPlease provid a valid integer.")"""
+            print(f"Error: {val_err}.\nPlease provide a valid integer.")"""
+    print(f"https://convertingcolors.com/rgb-color-{color_output[2][0]}_{color_output[2][1]}_{color_output[2][2]}.html")
