@@ -20,7 +20,7 @@ class MyClient(discord.Client):
             print("path exists")
         self.data_dir = "data"
         config_obj = configparser.ConfigParser()
-        config_file = os.path.join(self.data_dir, "config2.ini")
+        config_file = os.path.join(self.data_dir, "config.ini")
         if not os.path.exists(config_file) or os.path.getsize(config_file) == 0:
             config_stat = False
             while not config_stat:
@@ -35,10 +35,9 @@ class MyClient(discord.Client):
         #self.query = Query()
 
     async def on_ready(self):
-        print(f"Started {self.application.owner.name}'s bot: {self.application.name}")
-        print(f"{self.user.name}")
-        # print(self.getattr())
-        pprint(vars(self))
+        print(f"Connected\n------------\nOwner: {self.application.owner.name} ({self.application.owner.id})\n"
+              f"Bot: {self.application.name} ({self.application_id})\n"
+              f"Guild: {self.guilds[0]} ({self.guilds[0].id})\n------------\n")
 
     async def on_message(self, message):
         print(self.application)
@@ -86,7 +85,5 @@ class MyClient(discord.Client):
 
 if __name__ == "__main__":
     intents = discord.Intents.all()
-    # intents = discord.Intents(members=True, messages=True, message_content=True)
     client = MyClient(intents)
     client.run("")
-    # client.run("")  # Call test_environmental_setter, then retrieve key from environment variable
