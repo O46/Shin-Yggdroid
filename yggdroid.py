@@ -5,9 +5,11 @@ from datetime import datetime, timezone
 from pprint import pprint
 from pathlib import Path
 import calendar
-#from tinydb import TinyDB, Query
+# from tinydb import TinyDB, Query
 import os
 from tools import config_creator
+from tools import environmental_setter
+
 config = configparser.ConfigParser()
 
 
@@ -19,20 +21,32 @@ class MyClient(discord.Client):
         else:
             print("path exists")
         self.data_dir = "data"
-        config_obj = configparser.ConfigParser()
         config_file = os.path.join(self.data_dir, "config.ini")
         if not os.path.exists(config_file) or os.path.getsize(config_file) == 0:
             config_stat = False
             while not config_stat:
                 config_stat = config_creator.create_config(config_file, config_obj)
+        config_obj = configparser.ConfigParser()
+        config_obj.read(config_file)
+        self.guild_id = int(config_obj["GUILD"]["guild_id"])
+        self.channel_ids = dict(config_obj["CHANNELS"])
+        self.roles = dict(config_obj["ROLES"])
+        self.files = config_obj["FILES"]
+        self.emoji = config_obj["EMOJI"]
+        self.gacha = config_obj["GACHA.VALUES"]
 
-        #self.message_db = TinyDB(self.data_dir, 'messageHistory.json'))
-        #self.user_db = TinyDB(self.data_dir, 'userHistory.json'))
-        #self.accept_db = TinyDB(self.data_dir, 'rulesAccept.json'))
-        #self.name_backup_db = TinyDB(self.data_dir, "nameBackup.json"))
-        #self.eo_af_db = TinyDB(self.data_dir, 'af.json'))
-        #self.eo_af_global_db = TinyDB(self.data_dir, 'g_af.json'))
-        #self.query = Query()
+        # Converting all values in self.channel_ids, self.roles to ints for more performant comparisons, usages.
+        self.channel_ids = {key: int(value) for key, value in self.channel_ids.items()}
+        self.roles = {key: int(value) for key, value in self.roles.items()}
+
+        # print(config_obj["CHANNELS"]["announcement_channel_id"])
+        # self.message_db = TinyDB(self.data_dir, 'messageHistory.json'))
+        # self.user_db = TinyDB(self.data_dir, 'userHistory.json'))
+        # self.accept_db = TinyDB(self.data_dir, 'rulesAccept.json'))
+        # self.name_backup_db = TinyDB(self.data_dir, "nameBackup.json"))
+        # self.eo_af_db = TinyDB(self.data_dir, 'af.json'))
+        # self.eo_af_global_db = TinyDB(self.data_dir, 'g_af.json'))
+        # self.query = Query()
 
     async def on_ready(self):
         print(f"Connected\n------------\nOwner: {self.application.owner.name} ({self.application.owner.id})\n"
@@ -41,33 +55,35 @@ class MyClient(discord.Client):
 
     async def on_message(self, message):
         print(self.application)
-        if message.author.id is not self.application:
-            print("It's not me")
+        if message.author.id == self.application_id:
+            print("It's me")
         else:
-            print("It is me")
-        # Moving message params to their own dict, easier to iterate through, manage, and faster.
-        msg_attrs = {"channel_id": message.channel.id,
-                     "author_id": str(message.author.id),
-                     "message_id": str(message.id),
-                     "channel_name": message.channel.name,
-                     "author_name": message.author.name,
-                     "content": message.content,
-                     "time": message.created_at,  # datetime.now(timezone.utc),
-                     "attachments": message.attachments,
-                     "mentions": message.mentions
-                     }
-        pprint(msg_attrs)
+            print("It's not me")
+            # Moving message params to their own dict, easier to iterate through, manage, and faster.
+            if message.guild:
+                msg_attrs = {"channel_id": message.channel.id,
+                             "author_id": message.author.id,
+                             "message_id": message.id,
+                             "channel_name": message.channel.name,
+                             "author_name": message.author.name,
+                             "content": message.content,
+                             "time": message.created_at,  # datetime.now(timezone.utc),
+                             "attachments": message.attachments,
+                             "mentions": message.mentions
+                             }
+            else:
+                print("Privately messaged")
 
-        if str(message.channel).startswith("Direct Message with "):
-            print()
-        elif message.channel.id == 826856868416323604:  # eo_next channel
-            print()
-        elif message.channel.id == 531636126927028224:  # deep_city channel
-            print()
-        elif message.channel.id == 750481250267037727:  # rules_accept channel
-            print()
-        elif message.channel.id == 1020340888347623444:  # mod_commands channel
-            print()
+            if str(message.channel).startswith("Direct Message with "):
+                print()
+            elif message.channel.id == self.channel_ids["eo_next_id"]:
+                print()
+            elif message.channel.id == self.channel_ids["deep_city_id"]:
+                print()
+            elif message.channel.id == self.channel_ids["rules_accept_id"]:
+                print()
+            elif message.channel.id == self.channel_ids["mod_commands_id"]:
+                print("Message in mod commands")
 
     async def on_raw_message_delete(self, message):
         msg_attrs = {"channel_id": message.channel.id,
@@ -84,6 +100,10 @@ class MyClient(discord.Client):
 
 
 if __name__ == "__main__":
+
+    client_token = environmental_setter.env_var(["discord_token"])
     intents = discord.Intents.all()
     client = MyClient(intents)
-    client.run("")
+    print(f"{client_token['discord_token']}")
+    breakpoint()
+    client.run(client_token['discord_token'])
