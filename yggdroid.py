@@ -9,6 +9,7 @@ import calendar
 import os
 from tools import config_creator
 from tools import environmental_setter
+from tools import uid_to_color
 
 config = configparser.ConfigParser()
 
@@ -58,7 +59,6 @@ class MyClient(discord.Client):
         if message.author.id == self.application_id:
             print("It's me")
         else:
-            print("It's not me")
             # Moving message params to their own dict, easier to iterate through, manage, and faster.
             if message.guild:
                 msg_attrs = {"channel_id": message.channel.id,
@@ -83,7 +83,28 @@ class MyClient(discord.Client):
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
                 print()
             elif message.channel.id == self.channel_ids["mod_commands_id"]:
-                print("Message in mod commands")
+                command = message.content.split(maxsplit=2)
+                command[0] = command[0].lower()
+                if command[0] == "notifyuser":
+                    try:
+                        user_object = await client.fetch_user(command[1])
+                    except:
+                        user_object = False
+                    if not user_object:
+                        await message.channel.send(f"Unable to locate user by id {command[1]}")
+                    else:
+                        try:
+                            await user_object.send(command[1])
+                        except discord.errors.Forbidden as send_error:
+                            await message.channel.send(f"Unable to send message to {user_object}")
+                elif command[0] == "color":
+                    color = uid_to_color.id_to_color(provided_id=str(message.author.id))
+                    await message.channel.send(f"Your unique color is {color[2][0]}: "
+                                               f"https://convertingcolors.com/rgb-color-{color[2][0]}"
+                                               f"_{color[2][1]}_{color[2][2]}.html")
+                else:
+                    await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
+
 
     async def on_raw_message_delete(self, message):
         msg_attrs = {"channel_id": message.channel.id,
@@ -104,6 +125,4 @@ if __name__ == "__main__":
     client_token = environmental_setter.env_var(["discord_token"])
     intents = discord.Intents.all()
     client = MyClient(intents)
-    print(f"{client_token['discord_token']}")
-    breakpoint()
     client.run(client_token['discord_token'])

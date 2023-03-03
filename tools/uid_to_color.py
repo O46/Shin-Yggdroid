@@ -39,8 +39,8 @@ def id_to_color(provided_id: str = "0", l_min_range: int = -5, l_max_range: int 
     elif round_val == 0:
         return False, "Divisor cannot be 0", 0
     else:
-        print(f"User ID\n-------\n{user_id[l_min_range:l_max_range]}\n{user_id[m_min_range:m_max_range]}\n"
-              f"{user_id[r_min_range:r_max_range]}\n")
+        print(f"User ID\n-------\n{provided_id[l_min_range:l_max_range]}\n{provided_id[m_min_range:m_max_range]}\n"
+              f"{provided_id[r_min_range:r_max_range]}\n")
         first_num = conv_num(provided_id, l_min_range, l_max_range, round_val)
         second_num = conv_num(provided_id, m_min_range, m_max_range, round_val)
         third_num = conv_num(provided_id, r_min_range, r_max_range, round_val)
