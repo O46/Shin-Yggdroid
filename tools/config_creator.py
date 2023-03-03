@@ -1,5 +1,10 @@
 import configparser
-
+"""
+Creator: o46
+Date: 03/02/2023
+Updated: 03/03/2023
+Summary: Creates a config.ini file using user input. Utilizes a config_obj, which should be the configparser object
+"""
 
 def create_config(file_path, config_obj):
     """Creates a config.ini file by asking a user to supply an arbitrary number of sections, keys, and values."""

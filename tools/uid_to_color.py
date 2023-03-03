@@ -1,6 +1,7 @@
 """
 Creator: o46
 Date: 02/27/2023
+Updated: 03/03/2023
 Summary: performs basic arithmatic on a given number with a length of 15 or higher to generate an RGB color code.
 """
 
