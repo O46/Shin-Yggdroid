@@ -88,8 +88,9 @@ class MyClient(discord.Client):
                 if command[0] == "notifyuser":
                     try:
                         user_object = await client.fetch_user(command[1])
-                    except:
+                    except discord.NotFound as find_error:
                         user_object = False
+                        print(f"Could not find user: {find_error}")
                     if not user_object:
                         await message.channel.send(f"Unable to locate user by id {command[1]}")
                     else:

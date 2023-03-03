@@ -58,14 +58,3 @@ if __name__ == "__main__":
         except ValueError as val_err:
             print(f"Error: {val_err}.\nPlease provide a valid integer.")"""
     print(f"https://convertingcolors.com/rgb-color-{color_output[2][0]}_{color_output[2][1]}_{color_output[2][2]}.html")
-
-
-# 735920677986762755 - 160
-# 7359
-    # 20677986762756 - 161
-    # 87685931527606272
-    #     1420070400000
-# 735920677986762364 - 159
-# 735920677986762365 - 160
-
-# - 735920677986762365
