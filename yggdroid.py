@@ -1,7 +1,7 @@
 """
 Creator: o46
 Date: 02/28/2023
-Updated: 03/03/2023
+Updated: 03/04/2023
 Summary: performs basic arithmatic on a given number with a length of 15 or higher to generate an RGB color code.
 """
 
@@ -20,6 +20,18 @@ from tools import environmental_setter
 from tools import uid_to_color
 
 config = configparser.ConfigParser()
+
+
+def accept_log(message):
+    print("stub for logging user acceptance, record user ID, time, message and message id.")
+
+
+# Adds and formats user changes within a message
+def user_change(action, description, color, name, user_id):
+    formatted_message = discord.Embed(title=action, description=description, color=color)
+    formatted_message.add_field(name="Member Name: ", value=str(name), inline=True)
+    formatted_message.add_field(name="Member ID: ", value=str(user_id), inline=True)
+    return formatted_message
 
 
 class MyClient(discord.Client):
@@ -89,7 +101,16 @@ class MyClient(discord.Client):
             elif message.channel.id == self.channel_ids["deep_city_id"]:
                 print()
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
-                print()
+                guild = client.get_guild(self.guild_id)
+                new_member = discord.utils.get(guild.roles, name="new adventurer")
+                if message.content.strip().lower().startswith("accept"):
+                    print("user " + str(message.author) + " has accepted")
+                    await message.author.remove_roles(new_member)
+                    formatted_message = user_change("User accepted", "", 587983, message.author.name, message.author.id)
+                    # ("User Removed", "", 0xFFF8E7, member.name, member.id)
+                    channel = client.get_channel(541002563802103824)
+                    await channel.send(embed=formatted_message)
+                    accept_log(message)
             elif message.channel.id == self.channel_ids["mod_commands_id"]:
                 command = message.content.split(maxsplit=2)
                 command[0] = command[0].lower()
@@ -113,7 +134,6 @@ class MyClient(discord.Client):
                                                f"_{color[2][1]}_{color[2][2]}.html")
                 else:
                     await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
-
 
     async def on_raw_message_delete(self, message):
         msg_attrs = {"channel_id": message.channel.id,
