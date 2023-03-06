@@ -5,7 +5,6 @@ Updated: 03/04/2023
 Summary: performs basic arithmatic on a given number with a length of 15 or higher to generate an RGB color code.
 """
 
-
 import discord
 import configparser
 import inspect
@@ -18,8 +17,6 @@ import os
 from tools import config_creator
 from tools import environmental_setter
 from tools import uid_to_color
-
-config = configparser.ConfigParser()
 
 
 def accept_log(message):
@@ -34,31 +31,78 @@ def user_change(action, description, color, name, user_id):
     return formatted_message
 
 
+def message_attribute_extraction(message: discord.message.Message) -> dict:
+    """
+    Takes in a discord message object, extracts values I want to record, returns them in a dictionary where all
+    lookups are O(1) and simple."""
+    message_dict = {"channel_id": message.channel.id,
+                    "author_id": message.author.id,
+                    "message_id": message.id,
+                    "channel_name": message.channel.name,
+                    "author_name": message.author.name,
+                    "content": message.content,
+                    "time": message.created_at,  # datetime.now(timezone.utc),
+                    "attachments": message.attachments,
+                    "mentions": message.mentions
+                    }
+    return message_dict
+
+
+def role_assignment(discord_client, split_message):
+    """"""
+    try:
+        print(discord_client)
+        print(vars(discord_client))
+        pprint(discord_client)
+        guild = discord_client.get_guild(discord_client.guild_id)
+        print(f"GOT GUILD: {guild}")
+        color_anchor = guild.get_role(discord_client.roles["color"])
+        category_anchor = guild.get_role(discord_client.roles["category"])
+        class_anchor = guild.get_role(discord_client.roles["class"])
+        everyone_anchor = guild.get_role(discord_client.roles["everyone"])
+        color_roles = [r for r in guild.roles if color_anchor > r > category_anchor]
+        category_roles = [r for r in guild.roles if category_anchor > r > class_anchor]
+        class_roles = [r for r in guild.roles if class_anchor > r > everyone_anchor]
+    except Exception as e:
+        print(e)
+
+
+def items_to_ints(discord_client, item_obj, item_name):
+    """"""
+    setattr(discord_client, item_name, {key: int(value) for key, value in item_obj.items()})
+
+
+def set_config_vars(discord_client):
+    """"""
+    config_file = os.path.join(discord_client.data_dir, "config.ini")
+    if not os.path.exists(config_file) or os.path.getsize(config_file) == 0:
+        config_stat = False
+        while not config_stat:
+            config_stat = config_creator.create_config(config_file, discord_client.config_obj)
+    config_obj = configparser.ConfigParser()
+    config_obj.read(config_file)
+    discord_client.guild_id = int(config_obj["GUILD"]["guild_id"])
+    discord_client.channel_ids = dict(config_obj["CHANNELS"])
+    discord_client.roles = dict(config_obj["ROLES"])
+    discord_client.files = config_obj["FILES"]
+    discord_client.emoji = config_obj["EMOJI"]
+    discord_client.gacha = config_obj["GACHA.VALUES"]
+
+
 class MyClient(discord.Client):
     def __init__(self, set_intents):
         super().__init__(intents=set_intents)
+        self.config_obj = configparser.ConfigParser()
         if not os.path.exists("data"):
             os.makedirs(os.path.dirname("data"), exist_ok=True)
         else:
             print("path exists")
         self.data_dir = "data"
-        config_file = os.path.join(self.data_dir, "config.ini")
-        if not os.path.exists(config_file) or os.path.getsize(config_file) == 0:
-            config_stat = False
-            while not config_stat:
-                config_stat = config_creator.create_config(config_file, config_obj)
-        config_obj = configparser.ConfigParser()
-        config_obj.read(config_file)
-        self.guild_id = int(config_obj["GUILD"]["guild_id"])
-        self.channel_ids = dict(config_obj["CHANNELS"])
-        self.roles = dict(config_obj["ROLES"])
-        self.files = config_obj["FILES"]
-        self.emoji = config_obj["EMOJI"]
-        self.gacha = config_obj["GACHA.VALUES"]
+        set_config_vars(self)
 
         # Converting all values in self.channel_ids, self.roles to ints for more performant comparisons, usages.
-        self.channel_ids = {key: int(value) for key, value in self.channel_ids.items()}
-        self.roles = {key: int(value) for key, value in self.roles.items()}
+        items_to_ints(self, self.channel_ids, "channel_ids")
+        items_to_ints(self, self.roles, "roles")
 
         # print(config_obj["CHANNELS"]["announcement_channel_id"])
         # self.message_db = TinyDB(self.data_dir, 'messageHistory.json'))
@@ -75,22 +119,12 @@ class MyClient(discord.Client):
               f"Guild: {self.guilds[0]} ({self.guilds[0].id})\n------------\n")
 
     async def on_message(self, message):
-        print(self.application)
         if message.author.id == self.application_id:
             print("It's me")
         else:
             # Moving message params to their own dict, easier to iterate through, manage, and faster.
             if message.guild:
-                msg_attrs = {"channel_id": message.channel.id,
-                             "author_id": message.author.id,
-                             "message_id": message.id,
-                             "channel_name": message.channel.name,
-                             "author_name": message.author.name,
-                             "content": message.content,
-                             "time": message.created_at,  # datetime.now(timezone.utc),
-                             "attachments": message.attachments,
-                             "mentions": message.mentions
-                             }
+                msg_attrs = message_attribute_extraction(message)
             else:
                 print("Privately messaged")
 
@@ -98,8 +132,20 @@ class MyClient(discord.Client):
                 print()
             elif message.channel.id == self.channel_ids["eo_next_id"]:
                 print()
-            elif message.channel.id == self.channel_ids["deep_city_id"]:
-                print()
+            elif message.channel.id == self.channel_ids["mod_commands_id"]:  # deep_city_id
+                acceptable_commands = ["set", "rem", "lis", "!"]
+                try:
+                    split_message = str(message.content).lower().split(" ", 1)
+                    if not any(x in split_message[0] for x in acceptable_commands):
+                        print("exception raised")
+                        raise Exception
+                except:
+                    print("Not given usable command")
+                    await message.channel.send(
+                        'Please make sure your message is in the format \"[action(set/remove)] [role name]\"'.format(
+                            message))
+                    return
+                role_assignment(self, split_message)
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
                 guild = client.get_guild(self.guild_id)
                 new_member = discord.utils.get(guild.roles, name="new adventurer")
@@ -136,21 +182,12 @@ class MyClient(discord.Client):
                     await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
 
     async def on_raw_message_delete(self, message):
-        msg_attrs = {"channel_id": message.channel.id,
-                     "author_id": str(message.author.id),
-                     "message_id": str(message.id),
-                     "channel_name": message.channel.name,
-                     "author_name": message.author.name,
-                     "content": message.content,
-                     "time": message.created_at,  # datetime.now(timezone.utc),
-                     "attachments": message.attachments,
-                     "mentions": message.mentions
-                     }
+        print(type(message))
+        msg_attrs = message_attribute_extraction(message)
         pprint(msg_attrs)
 
 
 if __name__ == "__main__":
-
     client_token = environmental_setter.env_var(["discord_token"])
     intents = discord.Intents.all()
     client = MyClient(intents)
