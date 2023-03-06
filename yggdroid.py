@@ -114,11 +114,13 @@ class MyClient(discord.Client):
         # self.query = Query()
 
     async def on_ready(self):
+        """"""
         print(f"Connected\n------------\nOwner: {self.application.owner.name} ({self.application.owner.id})\n"
               f"Bot: {self.application.name} ({self.application_id})\n"
               f"Guild: {self.guilds[0]} ({self.guilds[0].id})\n------------\n")
 
     async def on_message(self, message):
+        """"""
         if message.author.id == self.application_id:
             print("It's me")
         else:
@@ -134,18 +136,15 @@ class MyClient(discord.Client):
                 print()
             elif message.channel.id == self.channel_ids["mod_commands_id"]:  # deep_city_id
                 acceptable_commands = ["set", "rem", "lis", "!"]
-                try:
-                    split_message = str(message.content).lower().split(" ", 1)
-                    if not any(x in split_message[0] for x in acceptable_commands):
-                        print("exception raised")
-                        raise Exception
-                except:
+                split_message = str(message.content).lower().split(" ", 1)
+                if not any(x in split_message[0] for x in acceptable_commands):
+                    print("Couldn't find command...")
                     print("Not given usable command")
                     await message.channel.send(
                         'Please make sure your message is in the format \"[action(set/remove)] [role name]\"'.format(
                             message))
-                    return
-                role_assignment(self, split_message)
+                else:
+                    role_assignment(self, split_message)
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
                 guild = client.get_guild(self.guild_id)
                 new_member = discord.utils.get(guild.roles, name="new adventurer")
@@ -182,6 +181,7 @@ class MyClient(discord.Client):
                     await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
 
     async def on_raw_message_delete(self, message):
+        """"""
         print(type(message))
         msg_attrs = message_attribute_extraction(message)
         pprint(msg_attrs)
