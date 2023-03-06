@@ -1,8 +1,15 @@
 """
 Creator: o46
 Date: 02/28/2023
-Updated: 03/04/2023
-Summary: performs basic arithmatic on a given number with a length of 15 or higher to generate an RGB color code.
+Updated: 03/06/2023
+Summary: Heart of the Shin-Yggdroid Discord management bot.
+    Features:
+        Role assignment - Users can assign themselves a select number of roles from predefined ranges
+        Moderation tools - Moderators can Warn, ban, and notify users, check user history (warn count, nickname history,
+            etc.)
+        Logging - Reactions, calls, content, and so on are logged to a MongoDB powered database
+        Games - Hosts the april fools gacha game, "play on 3DS through discord" feature
+        User admittance - Require users to sign a ToS before being admitted to server
 """
 
 import discord
@@ -139,7 +146,6 @@ class MyClient(discord.Client):
                 split_message = str(message.content).lower().split(" ", 1)
                 if not any(x in split_message[0] for x in acceptable_commands):
                     print("Couldn't find command...")
-                    print("Not given usable command")
                     await message.channel.send(
                         'Please make sure your message is in the format \"[action(set/remove)] [role name]\"'.format(
                             message))
@@ -153,7 +159,7 @@ class MyClient(discord.Client):
                     await message.author.remove_roles(new_member)
                     formatted_message = user_change("User accepted", "", 587983, message.author.name, message.author.id)
                     # ("User Removed", "", 0xFFF8E7, member.name, member.id)
-                    channel = client.get_channel(541002563802103824)
+                    channel = client.get_channel(self.channel_ids["rules_accept_id"])
                     await channel.send(embed=formatted_message)
                     accept_log(message)
             elif message.channel.id == self.channel_ids["mod_commands_id"]:
