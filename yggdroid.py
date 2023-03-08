@@ -12,18 +12,19 @@ Summary: Heart of the Shin-Yggdroid Discord management bot.
         User admittance - Require users to sign a ToS before being admitted to server
 """
 
-import discord
-import configparser
-import inspect
-from datetime import datetime, timezone
-from pprint import pprint
-from pathlib import Path
-import calendar
-# from tinydb import TinyDB, Query
 import os
+import configparser
+from pprint import pprint
+import discord
 from tools import config_creator
 from tools import environmental_setter
 from tools import uid_to_color
+
+# import inspect
+# from datetime import datetime, timezone
+# from pathlib import Path
+# import calendar
+# from tinydb import TinyDB, Query
 
 
 def accept_log(message):
@@ -131,8 +132,8 @@ class MyClient(discord.Client):
         if message.author.id == self.application_id:
             print("It's me")
         else:
-            # Moving message params to their own dict, easier to iterate through, manage, and faster.
             if message.guild:
+                # Moving message params to their own dict, easier to iterate through, manage, and faster.
                 msg_attrs = message_attribute_extraction(message)
             else:
                 print("Privately messaged")
@@ -150,12 +151,13 @@ class MyClient(discord.Client):
                         'Please make sure your message is in the format \"[action(set/remove)] [role name]\"'.format(
                             message))
                 else:
-                    role_assignment(self, split_message)
+                    print(message.guild.roles)
+                    # role_assignment(self, split_message)
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
                 guild = client.get_guild(self.guild_id)
                 new_member = discord.utils.get(guild.roles, name="new adventurer")
                 if message.content.strip().lower().startswith("accept"):
-                    print("user " + str(message.author) + " has accepted")
+                    print(f"user {message.author} has accepted")
                     await message.author.remove_roles(new_member)
                     formatted_message = user_change("User accepted", "", 587983, message.author.name, message.author.id)
                     # ("User Removed", "", 0xFFF8E7, member.name, member.id)
