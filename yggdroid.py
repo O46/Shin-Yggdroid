@@ -56,23 +56,7 @@ def message_attribute_extraction(message: discord.message.Message) -> dict:
     return message_dict
 
 
-def role_assignment(discord_client, split_message):
-    """"""
-    try:
-        print(discord_client)
-        print(vars(discord_client))
-        pprint(discord_client)
-        guild = discord_client.get_guild(discord_client.guild_id)
-        print(f"GOT GUILD: {guild}")
-        color_anchor = guild.get_role(discord_client.roles["color"])
-        category_anchor = guild.get_role(discord_client.roles["category"])
-        class_anchor = guild.get_role(discord_client.roles["class"])
-        everyone_anchor = guild.get_role(discord_client.roles["everyone"])
-        color_roles = [r for r in guild.roles if color_anchor > r > category_anchor]
-        category_roles = [r for r in guild.roles if category_anchor > r > class_anchor]
-        class_roles = [r for r in guild.roles if class_anchor > r > everyone_anchor]
-    except Exception as e:
-        print(e)
+
 
 
 def items_to_ints(discord_client, item_obj, item_name):
@@ -154,39 +138,9 @@ class MyClient(discord.Client):
                     print(message.guild.roles)
                     # role_assignment(self, split_message)
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
-                guild = client.get_guild(self.guild_id)
-                new_member = discord.utils.get(guild.roles, name="new adventurer")
-                if message.content.strip().lower().startswith("accept"):
-                    print(f"user {message.author} has accepted")
-                    await message.author.remove_roles(new_member)
-                    formatted_message = user_change("User accepted", "", 587983, message.author.name, message.author.id)
-                    # ("User Removed", "", 0xFFF8E7, member.name, member.id)
-                    channel = client.get_channel(self.channel_ids["rules_accept_id"])
-                    await channel.send(embed=formatted_message)
-                    accept_log(message)
+                # Call rules_admittance
             elif message.channel.id == self.channel_ids["mod_commands_id"]:
-                command = message.content.split(maxsplit=2)
-                command[0] = command[0].lower()
-                if command[0] == "notifyuser":
-                    try:
-                        user_object = await client.fetch_user(command[1])
-                    except discord.NotFound as find_error:
-                        user_object = False
-                        print(f"Could not find user: {find_error}")
-                    if not user_object:
-                        await message.channel.send(f"Unable to locate user by id {command[1]}")
-                    else:
-                        try:
-                            await user_object.send(command[1])
-                        except discord.errors.Forbidden as send_error:
-                            await message.channel.send(f"Unable to send message to {user_object}")
-                elif command[0] == "color":
-                    color = uid_to_color.id_to_color(provided_id=str(message.author.id))
-                    await message.channel.send(f"Your unique color is {color[2][0]}: "
-                                               f"https://convertingcolors.com/rgb-color-{color[2][0]}"
-                                               f"_{color[2][1]}_{color[2][2]}.html")
-                else:
-                    await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
+                # Call mod_commands.py
 
     async def on_raw_message_delete(self, message):
         """"""
