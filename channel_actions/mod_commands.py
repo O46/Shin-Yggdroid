@@ -1,4 +1,4 @@
-command = message.content.split(maxsplit=2)
+"""command = message.content.split(maxsplit=2)
 command[0] = command[0].lower()
 if command[0] == "notifyuser":
     try:
@@ -19,4 +19,4 @@ elif command[0] == "color":
                                f"https://convertingcolors.com/rgb-color-{color[2][0]}"
                                f"_{color[2][1]}_{color[2][2]}.html")
 else:
-    await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
+    await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")"""

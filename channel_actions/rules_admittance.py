@@ -1,4 +1,4 @@
-guild = client.get_guild(self.guild_id)
+"""guild = client.get_guild(self.guild_id)
 new_member = discord.utils.get(guild.roles, name="new adventurer")
 if message.content.strip().lower().startswith("accept"):
     print(f"user {message.author} has accepted")
@@ -7,4 +7,4 @@ if message.content.strip().lower().startswith("accept"):
     # ("User Removed", "", 0xFFF8E7, member.name, member.id)
     channel = client.get_channel(self.channel_ids["rules_accept_id"])
     await channel.send(embed=formatted_message)
-    accept_log(message)
+    accept_log(message)"""

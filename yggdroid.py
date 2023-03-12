@@ -20,6 +20,9 @@ from tools import config_creator
 from tools import environmental_setter
 from tools import uid_to_color
 
+from channel_actions import *
+
+
 # import inspect
 # from datetime import datetime, timezone
 # from pathlib import Path
@@ -54,9 +57,6 @@ def message_attribute_extraction(message: discord.message.Message) -> dict:
                     "mentions": message.mentions
                     }
     return message_dict
-
-
-
 
 
 def items_to_ints(discord_client, item_obj, item_name):
@@ -124,8 +124,10 @@ class MyClient(discord.Client):
 
             if str(message.channel).startswith("Direct Message with "):
                 print()
+                direct(self, message)
             elif message.channel.id == self.channel_ids["eo_next_id"]:
                 print()
+                gacha(self, msg_attrs)
             elif message.channel.id == self.channel_ids["mod_commands_id"]:  # deep_city_id
                 acceptable_commands = ["set", "rem", "lis", "!"]
                 split_message = str(message.content).lower().split(" ", 1)
@@ -136,11 +138,12 @@ class MyClient(discord.Client):
                             message))
                 else:
                     print(message.guild.roles)
+                    mod_commands(self, message_attribtues=msg_attrs, splt_msg=split_message)
                     # role_assignment(self, split_message)
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
+                print()
+                rules_admittance(self, msg_attrs)
                 # Call rules_admittance
-            elif message.channel.id == self.channel_ids["mod_commands_id"]:
-                # Call mod_commands.py
 
     async def on_raw_message_delete(self, message):
         """"""

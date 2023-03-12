@@ -1,4 +1,4 @@
-def role_assignment(discord_client, split_message):
+"""def role_assignment(discord_client, split_message):
     """"""
     try:
         print(discord_client)
@@ -14,4 +14,4 @@ def role_assignment(discord_client, split_message):
         category_roles = [r for r in guild.roles if category_anchor > r > class_anchor]
         class_roles = [r for r in guild.roles if class_anchor > r > everyone_anchor]
     except Exception as e:
-        print(e)
+        print(e)"""
