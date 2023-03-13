@@ -21,6 +21,7 @@ from tools import environmental_setter
 from tools import uid_to_color
 
 from channel_actions import *
+from discord.ext import commands
 
 
 # import inspect
@@ -81,6 +82,18 @@ def set_config_vars(discord_client):
     discord_client.gacha = config_obj["GACHA.VALUES"]
 
 
+def refresh_guild(client):
+    client.guild_obj = client.get_guild(client.guild_id)
+    print(f"Discord guild object: {client.guild_obj}")
+
+
+def refresh_roles(client):
+    print(client.guild_obj.roles)
+    #client.guild_roles = discord.utils.get(client.guild_obj.roles)
+    #print(type(client.guild_obj.roles))
+    print(f"Discord roles object: {dir(client.guild_roles)}")
+
+
 class MyClient(discord.Client):
     def __init__(self, set_intents):
         super().__init__(intents=set_intents)
@@ -110,6 +123,8 @@ class MyClient(discord.Client):
         print(f"Connected\n------------\nOwner: {self.application.owner.name} ({self.application.owner.id})\n"
               f"Bot: {self.application.name} ({self.application_id})\n"
               f"Guild: {self.guilds[0]} ({self.guilds[0].id})\n------------\n")
+        refresh_guild(self)
+        refresh_roles(self)
 
     async def on_message(self, message):
         """"""
@@ -129,7 +144,8 @@ class MyClient(discord.Client):
                 print()
                 gacha(self, msg_attrs)
             elif message.channel.id == self.channel_ids["mod_commands_id"]:  # deep_city_id
-                acceptable_commands = ["set", "rem", "lis", "!"]
+                await rules_admittance.accept_handler(self, message)
+                """acceptable_commands = ["set", "rem", "lis", "!"]
                 split_message = str(message.content).lower().split(" ", 1)
                 if not any(x in split_message[0] for x in acceptable_commands):
                     print("Couldn't find command...")
@@ -138,11 +154,11 @@ class MyClient(discord.Client):
                             message))
                 else:
                     print(message.guild.roles)
-                    mod_commands(self, message_attribtues=msg_attrs, splt_msg=split_message)
-                    # role_assignment(self, split_message)
+                    mod_commands.command_handler(self, message_attributes=msg_attrs, split_message=split_message)
+                    # role_assignment(self, split_message)"""
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
                 print()
-                rules_admittance(self, msg_attrs)
+                rules_admittance.accept_handler(self, msg_attrs)
                 # Call rules_admittance
 
     async def on_raw_message_delete(self, message):
