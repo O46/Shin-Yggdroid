@@ -1,7 +1,8 @@
-"""import discord
+import discord
+from tools import uid_to_color
 
 
-def notify_user(client, split_message):
+async def notify_user(client, message_attributes,  split_message):
     user_id = split_message.split(" ", 2)[0]
     try:
         user_object = await client.fetch_user(user_id)
@@ -10,24 +11,22 @@ def notify_user(client, split_message):
         print(f"Could not find user: {find_error}")
 
     if not user_object:
-        await message.channel.send(f"Unable to locate user by id {command[1]}")
+        await split_message.channel.send(f"Unable to locate user by id {split_message[1]}")
     else:
         try:
-            await user_object.send(command[1])
+            await user_object.send(split_message[1])
         except discord.errors.Forbidden as send_error:
-            await message.channel.send(f"Unable to send message to {user_object}")
-    if command[0] == "color":
-        color = uid_to_color.id_to_color(provided_id=str(message.author.id))
-        await message.channel.send(f"Your unique color is {color[2][0]}: "
+            await split_message.channel.send(f"Unable to send message to {user_object}")
+    if split_message[0] == "color":
+        color = uid_to_color(provided_id=str(message_attributes.author_id))
+        await split_message.channel.send(f"Your unique color is {color[2][0]}: "
                                f"https://convertingcolors.com/rgb-color-{color[2][0]}"
                                f"_{color[2][1]}_{color[2][2]}.html")
     else:
-        await message.channel.send(f"Could not find suitable command in string \"{command[0]}\"")
+        await split_message.channel.send(f"Could not find suitable command in string \"{split_message[0]}\"")
 
 
-def command_handler(self, message_attributes, split_message):
+async def command_handler(self, message_attributes, split_message):
     print(split_message)
     if split_message[0] == "notifyuser":
         notify_user(self, split_message)
-
-"""

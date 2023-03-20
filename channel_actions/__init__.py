@@ -1,4 +1,4 @@
-from .private import *
+from .private_message import *
 from .gacha import *
 from .mod_commands import *
 from .role_assignment import *

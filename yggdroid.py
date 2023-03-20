@@ -17,18 +17,14 @@ import os
 import configparser
 from pprint import pprint
 import discord
+import importlib.util
 
-from discord.ext import commands
-
-from tools import config_creator
+# from tools import config_creator
 from tools import environmental_setter
-from tools import uid_to_color
 # from channel_actions import * This is considered bad practice by PEP standards?
-from channel_actions import private
+from channel_actions import private_message
 from channel_actions import gacha
 from channel_actions import mod_commands
-from channel_actions import moderation_actions
-from channel_actions import role_assignment
 from channel_actions import rules_admittance
 
 
@@ -37,13 +33,6 @@ from channel_actions import rules_admittance
 # from pathlib import Path
 # import calendar
 # from tinydb import TinyDB, Query
-
-
-def accept_log(message):
-    """Will commit record of a user accepting ToS, both for posterity and lookups on
-    users joining to decide whether they need to agree to ToS."""
-    print(f"stub for logging user acceptance, record user ID, time, message and message id."
-          f"{message}")
 
 
 # Adds and formats user changes within a message
@@ -71,28 +60,6 @@ def message_attribute_extraction(message: discord.message.Message) -> dict:
     return message_dict
 
 
-def items_to_ints(discord_client, item_obj, item_name):
-    """Converts all of a dictionary's key-values to integers"""
-    setattr(discord_client, item_name, {key: int(value) for key, value in item_obj.items()})
-
-
-def set_config_vars(discord_client):
-    """Sets all configuration variables"""
-    config_file = os.path.join(discord_client.data_dir, "config.ini")
-    if not os.path.exists(config_file) or os.path.getsize(config_file) == 0:
-        config_stat = False
-        while not config_stat:
-            config_stat = config_creator.create_config(config_file, discord_client.config_obj)
-    config_obj = configparser.ConfigParser()
-    config_obj.read(config_file)
-    discord_client.guild_id = int(config_obj["GUILD"]["guild_id"])
-    discord_client.channel_ids = dict(config_obj["CHANNELS"])
-    discord_client.roles = dict(config_obj["ROLES"])
-    discord_client.files = config_obj["FILES"]
-    discord_client.emoji = config_obj["EMOJI"]
-    discord_client.gacha = config_obj["GACHA.VALUES"]
-
-
 def refresh_guild(discord_client):
     """Refreshes the guild object"""
     discord_client.guild_obj = discord_client.get_guild(discord_client.guild_id)
@@ -117,12 +84,29 @@ class MyClient(discord.Client):
         else:
             print("path exists")
         self.data_dir = "data"
-        set_config_vars(self)
 
+        # get the path of the "tools" directory relative to the current file
+        self.tools_dir = os.path.join(os.path.dirname(__file__), 'tools')
+
+        # loop through all files in the tools directory
+        for filename in os.listdir(self.tools_dir):
+            if filename.endswith('.py'):
+                # import the module using the full path to the file
+                module_name = os.path.splitext(filename)[0]  # remove the file extension
+                module_path = os.path.join(self.tools_dir, filename)
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+
+                # attach the module to a self attribute with the module name
+                setattr(self, module_name, module)
+
+        self.set_config.set_config_vars(self)
+        # self.accept_log = accept_log()
         # Converting all values in self.channel_ids, self.roles to ints for more performant
         # comparisons, usages.
-        items_to_ints(self, self.channel_ids, "channel_ids")
-        items_to_ints(self, self.roles, "roles")
+        self.items_to_ints.items_to_ints(self, self.channel_ids, "channel_ids")
+        self.items_to_ints.items_to_ints(self, self.roles, "roles")
 
         # print(config_obj["CHANNELS"]["announcement_channel_id"])
         # self.message_db = TinyDB(self.data_dir, 'messageHistory.json'))
@@ -157,7 +141,7 @@ class MyClient(discord.Client):
                 print("Privately messaged")
 
             if str(message.channel).startswith("Direct Message with "):
-                private.print_me(self, message)
+                private_message.print_me(self, message)
             elif message.channel.id == self.channel_ids["eo_next_id"]:
                 gacha.place_holder(self, msg_attrs)
             elif message.channel.id == self.channel_ids["mod_commands_id"]:  # deep_city_id
@@ -165,8 +149,8 @@ class MyClient(discord.Client):
                 acceptable_commands = ["set", "rem", "lis", "!"]
                 split_message = str(message.content).lower().split(" ", 1)
                 if not any(x in split_message[0] for x in acceptable_commands):
-                    await message.channel.send(f"Please make sure your message is in the format"
-                                               f"[action(set/remove)] [role name]")
+                    await message.channel.send("Please make sure your message is in the format"
+                                               "[action(set/remove)] [role name]")
 
                 else:
                     print(message.guild.roles)
@@ -175,7 +159,7 @@ class MyClient(discord.Client):
                     # role_assignment(self, split_message)"""
             elif message.channel.id == self.channel_ids["rules_accept_id"]:
                 print()
-                rules_admittance.accept_handler(self, msg_attrs)
+                await rules_admittance.accept_handler(self, msg_attrs)
                 # Call rules_admittance
 
     async def on_raw_message_delete(self, message):
