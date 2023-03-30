@@ -13,19 +13,20 @@ Summary: Heart of the Shin-Yggdroid Discord management bot.
         User admittance - Require users to sign a ToS before being admitted to server
 """
 
-import os
 import configparser
-from pprint import pprint
-import discord
 import importlib.util
+import os
+from pprint import pprint
 
-# from tools import config_creator
-from tools import environmental_setter
-# from channel_actions import * This is considered bad practice by PEP standards?
-from channel_actions import private_message
+import discord
+
 from channel_actions import gacha
 from channel_actions import mod_commands
+# from channel_actions import * This is considered bad practice by PEP standards?
+from channel_actions import private_message
 from channel_actions import rules_admittance
+# from tools import config_creator
+from tools import environmental_setter
 
 
 # import inspect
@@ -33,43 +34,6 @@ from channel_actions import rules_admittance
 # from pathlib import Path
 # import calendar
 # from tinydb import TinyDB, Query
-
-
-# Adds and formats user changes within a message
-def user_change(action, description, color, name, user_id):
-    """Used to format messages sent when a user updates his or her profile"""
-    formatted_message = discord.Embed(title=action, description=description, color=color)
-    formatted_message.add_field(name="Member Name: ", value=str(name), inline=True)
-    formatted_message.add_field(name="Member ID: ", value=str(user_id), inline=True)
-    return formatted_message
-
-
-def message_attribute_extraction(message: discord.message.Message) -> dict:
-    """Takes in a discord message object, extracts values I want to record, returns them in a
-    dictionary where all lookups are O(1) and simple."""
-    message_dict = {"channel_id": message.channel.id,
-                    "author_id": message.author.id,
-                    "message_id": message.id,
-                    "channel_name": message.channel.name,
-                    "author_name": message.author.name,
-                    "content": message.content,
-                    "time": message.created_at,  # datetime.now(timezone.utc),
-                    "attachments": message.attachments,
-                    "mentions": message.mentions
-                    }
-    return message_dict
-
-
-def refresh_guild(discord_client):
-    """Refreshes the guild object"""
-    discord_client.guild_obj = discord_client.get_guild(discord_client.guild_id)
-    print(f"Discord guild object: {discord_client.guild_obj}")
-
-
-def refresh_roles(discord_client):
-    """Refreshes all roles assigned to the guild object"""
-    discord_client.guild_roles = discord.utils.get(discord_client.guild_obj.roles)
-    print(f"Discord roles object: {dir(discord_client.guild_roles)}")
 
 
 class MyClient(discord.Client):
@@ -101,6 +65,9 @@ class MyClient(discord.Client):
                 # attach the module to a self attribute with the module name
                 setattr(self, module_name, module)
 
+
+        # await self.load_extension()
+
         self.set_config.set_config_vars(self)
         # self.accept_log = accept_log()
         # Converting all values in self.channel_ids, self.roles to ints for more performant
@@ -123,8 +90,8 @@ class MyClient(discord.Client):
         print(f"Connected\n------------\nOwner: {self.application.owner.name} ("
               f"{self.application.owner.id})\nBot: {self.application.name} ({self.application_id})"
               f"\nGuild: {self.guilds[0]} ({self.guilds[0].id})\n------------\n")
-        refresh_guild(self)
-        refresh_roles(self)
+        self.refresh_guild()
+        self.refresh_roles()
 
     async def on_message(self, message):
         """This hijacks the on_message event to determine how to handle messages based on what
@@ -136,7 +103,7 @@ class MyClient(discord.Client):
             if message.guild:
                 # Moving message params to their own dict, easier to iterate through, manage,
                 # and faster.
-                msg_attrs = message_attribute_extraction(message)
+                msg_attrs = self.message_attribute_extraction(message)
             else:
                 print("Privately messaged")
 
@@ -166,8 +133,41 @@ class MyClient(discord.Client):
         """Whenever a message is deleted trigger this handler, will extract known variables and
          commit them to log"""
         print(type(message))
-        msg_attrs = message_attribute_extraction(message)
+        msg_attrs = self.message_attribute_extraction(message)
         pprint(msg_attrs)
+
+    # Adds and formats user changes within a message
+    def user_change(self, action, description, color, name, user_id):
+        """Used to format messages sent when a user updates his or her profile"""
+        formatted_message = discord.Embed(title=action, description=description, color=color)
+        formatted_message.add_field(name="Member Name: ", value=str(name), inline=True)
+        formatted_message.add_field(name="Member ID: ", value=str(user_id), inline=True)
+        return formatted_message
+
+    def message_attribute_extraction(self, message: discord.message.Message) -> dict:
+        """Takes in a discord message object, extracts values I want to record, returns them in a
+        dictionary where all lookups are O(1) and simple."""
+        message_dict = {"channel_id": message.channel.id,
+                        "author_id": message.author.id,
+                        "message_id": message.id,
+                        "channel_name": message.channel.name,
+                        "author_name": message.author.name,
+                        "content": message.content,
+                        "time": message.created_at,  # datetime.now(timezone.utc),
+                        "attachments": message.attachments,
+                        "mentions": message.mentions
+                        }
+        return message_dict
+
+    def refresh_guild(self):
+        """Refreshes the guild object"""
+        self.guild_obj = self.get_guild(self.guild_id)
+        print(f"Discord guild object: {self.guild_obj}")
+
+    def refresh_roles(self):
+        """Refreshes all roles assigned to the guild object"""
+        self.guild_roles = discord.utils.get(self.guild_obj.roles)
+        print(f"Discord roles object: {dir(self.guild_roles)}")
 
 
 if __name__ == "__main__":

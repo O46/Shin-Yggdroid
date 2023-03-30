@@ -4,7 +4,8 @@ from discord.ext import commands
 @commands.Cog.listener()
 async def on_message(self, message):
     """Actually adds the autoassign roles."""
-    print(f"Member joined, {message}")
+    print("Cog activated")
+    print(f"Message sent, {message}")
     print(self.data_dir)
     #autoassign_roles = []
     #autoassign_role_ids = await \
